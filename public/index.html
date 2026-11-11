@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Clauree: see your Claude limit coming</title>
+<style>
+:root{--bg:#faf7f2;--fg:#2d2b2a;--mu:#8c857b;--bd:#e5e2dc;--ac:#d95d39;--card:#fff}
+@media(prefers-color-scheme:dark){:root{--bg:#121110;--fg:#eae6df;--bd:#3d3937;--card:#282524}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,sans-serif}
+main{max-width:760px;margin:0 auto;padding:48px 20px 120px}
+h1{font-size:clamp(28px,5vw,44px);line-height:1.15;margin:0 0 12px}h2{margin:48px 0 8px}p{max-width:62ch}.mu{color:var(--mu)}
+.btn{display:inline-block;padding:11px 18px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--fg);font:inherit;cursor:pointer;text-decoration:none}
+.btn.pr{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:600;cursor:grab}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+#demo{border:1px dashed var(--bd);border-radius:16px;padding:16px;margin-top:12px}
+#msgs{display:grid;gap:10px;min-height:120px;max-height:260px;overflow:auto;margin-bottom:12px}
+#msgs div{padding:10px 12px;border-radius:12px;background:var(--card);border:1px solid var(--bd);max-width:85%}
+#msgs .font-claude-message{justify-self:start}[data-testid=user-message]{justify-self:end}
+#bn{color:#d64545;margin:0 0 8px;min-height:1px}
+#box{display:flex;gap:8px;align-items:flex-end;background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:10px}
+#ed{flex:1;min-height:44px;max-height:140px;overflow:auto;outline:none;padding:4px}
+#ed:empty:before{content:attr(data-ph);color:var(--mu)}
+#snd{border:0;border-radius:10px;background:var(--ac);color:#fff;width:40px;height:40px;cursor:pointer}
+code{background:var(--card);border:1px solid var(--bd);padding:1px 6px;border-radius:6px}
+</style>
+</head>
+<body>
+<main>
+  <h1>See your Claude limit coming before it hits.</h1>
+  <p>Clauree sits above the Claude chat box and shows how much of your free limit you have used, when you will run out, and what to do about it.</p>
+
+  <h2>Install</h2>
+  <p>Drag the orange button to your bookmarks bar. Then open claude.ai and click it.</p>
+  <div class="row">
+    <a id="bm" class="btn pr" href="#">Clauree</a>
+    <button class="btn" id="copy">Copy script</button>
+  </div>
+  <p class="mu" id="bmnote">Preparing the button…</p>
+
+  <h2>Try it here</h2>
+  <p>This page copies the parts of Claude's chat the engine reads, so the demo runs the same code as the real thing. Send a few messages, then simulate a limit.</p>
+  <div class="row">
+    <button class="btn" id="lim">Simulate limit</button>
+    <button class="btn" id="rst">Clear limit</button>
+  </div>
+  <div id="demo">
+    <div id="msgs"></div>
+    <p id="bn"></p>
+    <div id="box" data-composer>
+      <div id="ed" contenteditable="true" data-ph="Message Claude…"></div>
+      <button id="snd" aria-label="Send message">➤</button>
+    </div>
+  </div>
+</main>
+<script>
+let code='';
+const bm=document.getElementById('bm'),note=document.getElementById('bmnote');
+fetch('/clauree.js').then(r=>r.text()).then(t=>{
+  code=t.replace(/__ORIGIN__/g,location.origin);
+  bm.href='javascript:'+encodeURIComponent(code+'\n;void 0');
+  note.textContent='Ready. If your browser refuses the drag, use Copy script and paste it into a new bookmark’s URL field after typing javascript: first.';
+}).catch(()=>note.textContent='Could not load the script. Refresh the page.');
+document.getElementById('copy').onclick=()=>{
+  const txt='javascript:'+encodeURIComponent(code+'\n;void 0');
+  navigator.clipboard.writeText(txt).then(()=>note.textContent='Copied.',()=>note.textContent='Copy failed. Drag the button instead.');
+};
+bm.addEventListener('click',e=>{e.preventDefault();note.textContent='Drag this button to your bookmarks bar. Clicking it here does nothing.'});
+
+let limited=false;
+const msgs=document.getElementById('msgs'),ed=document.getElementById('ed'),bn=document.getElementById('bn');
+function add(cls,text,attr){const d=document.createElement('div');if(attr)d.setAttribute('data-testid',attr);else d.className=cls;d.textContent=text;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;return d}
+function send(){
+  const t=ed.innerText.trim();if(!t||limited)return;
+  add('', t,'user-message');ed.innerHTML='';
+  const r=add('font-claude-message','');
+  const full=('This is a simulated reply to show how Clauree measures your usage. '.repeat(2+Math.floor(Math.random()*5))).trim();
+  let i=0;const iv=setInterval(()=>{i+=12;r.textContent=full.slice(0,i);if(i>=full.length)clearInterval(iv)},80);
+}
+document.getElementById('snd').onclick=send;
+ed.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}});
+document.getElementById('lim').onclick=()=>{
+  limited=true;const d=new Date(Date.now()+2*3600e3);
+  const h=d.getHours()%12||12,m=String(d.getMinutes()).padStart(2,'0'),ap=d.getHours()>=12?'PM':'AM';
+  bn.textContent='You have reached your usage limit. Your limit resets at '+h+':'+m+' '+ap+'.';
+};
+document.getElementById('rst').onclick=()=>{limited=false;bn.textContent=''};
+</script>
+<script src="/clauree.js"></script>
+</body>
+</html>

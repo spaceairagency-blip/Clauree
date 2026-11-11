@@ -1,0 +1,18 @@
+<!doctype html><meta charset="utf-8"><title>Clauree bridge</title>
+<style>body{font:14px system-ui;margin:20px;color:#2d2b2a}</style>
+<p><b>Clauree AI bridge</b><br>Keep this small window open while you use the planner. You can minimize it.</p>
+<script>
+const OK = ['https://claude.ai', location.origin];
+addEventListener('message', async (e) => {
+  if (!OK.includes(e.origin)) return;
+  const { id, body } = e.data || {};
+  if (!id) return;
+  let res;
+  try {
+    const r = await fetch('/api/ai', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    res = await r.json();
+  } catch (x) { res = { error: 'Network error.' }; }
+  e.source.postMessage({ id, res }, e.origin);
+});
+if (opener) opener.postMessage({ ready: 1 }, 'https://claude.ai');
+</script>
