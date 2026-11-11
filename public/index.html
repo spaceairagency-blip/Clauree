@@ -1,91 +1,448 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Clauree: see your Claude limit coming</title>
-<style>
-:root{--bg:#faf7f2;--fg:#2d2b2a;--mu:#8c857b;--bd:#e5e2dc;--ac:#d95d39;--card:#fff}
-@media(prefers-color-scheme:dark){:root{--bg:#121110;--fg:#eae6df;--bd:#3d3937;--card:#282524}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.55 system-ui,sans-serif}
-main{max-width:760px;margin:0 auto;padding:48px 20px 120px}
-h1{font-size:clamp(28px,5vw,44px);line-height:1.15;margin:0 0 12px}h2{margin:48px 0 8px}p{max-width:62ch}.mu{color:var(--mu)}
-.btn{display:inline-block;padding:11px 18px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--fg);font:inherit;cursor:pointer;text-decoration:none}
-.btn.pr{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:600;cursor:grab}
-.row{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
-#demo{border:1px dashed var(--bd);border-radius:16px;padding:16px;margin-top:12px}
-#msgs{display:grid;gap:10px;min-height:120px;max-height:260px;overflow:auto;margin-bottom:12px}
-#msgs div{padding:10px 12px;border-radius:12px;background:var(--card);border:1px solid var(--bd);max-width:85%}
-#msgs .font-claude-message{justify-self:start}[data-testid=user-message]{justify-self:end}
-#bn{color:#d64545;margin:0 0 8px;min-height:1px}
-#box{display:flex;gap:8px;align-items:flex-end;background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:10px}
-#ed{flex:1;min-height:44px;max-height:140px;overflow:auto;outline:none;padding:4px}
-#ed:empty:before{content:attr(data-ph);color:var(--mu)}
-#snd{border:0;border-radius:10px;background:var(--ac);color:#fff;width:40px;height:40px;cursor:pointer}
-code{background:var(--card);border:1px solid var(--bd);padding:1px 6px;border-radius:6px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clauree - Smart Claude Free-Tier Assistant & Limit Bypass</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#FDFBF7',
+                            100: '#FAF7F2',
+                            200: '#EAE6DF',
+                            300: '#D5CF26',
+                            accent: '#D95D39',
+                            hover: '#C04C2B',
+                            dark: '#1C1A19',
+                            cardDark: '#282524',
+                            textDark: '#2D2B2A',
+                            subtle: '#8C857B',
+                            border: '#E5E2DC',
+                            borderDark: '#3D3937'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'Fira Code', 'monospace']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #FAF7F2;
+            color: #2D2B2A;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .dark body {
+            background-color: #121110;
+            color: #EAE6DF;
+        }
+        .drag-btn {
+            background: linear-gradient(135deg, #D95D39 0%, #C04C2B 100%);
+            box-shadow: 0 4px 14px rgba(217, 93, 57, 0.35);
+        }
+        .drag-btn:hover {
+            box-shadow: 0 6px 20px rgba(217, 93, 57, 0.45);
+        }
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(140, 133, 123, 0.3);
+            border-radius: 999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(217, 93, 57, 0.6);
+        }
+        #sim-prompt-input:empty:before{content:attr(data-ph);color:#8C857B}
+        .glow-effect {
+            box-shadow: 0 0 25px -5px rgba(217, 93, 57, 0.3);
+        }
+    </style>
 </head>
-<body>
-<main>
-  <h1>See your Claude limit coming before it hits.</h1>
-  <p>Clauree sits above the Claude chat box and shows how much of your free limit you have used, when you will run out, and what to do about it.</p>
+<body class="font-sans antialiased min-h-screen flex flex-col selection:bg-brand-accent selection:text-white">
 
-  <h2>Install</h2>
-  <p>Drag the orange button to your bookmarks bar. Then open claude.ai and click it.</p>
-  <div class="row">
-    <a id="bm" class="btn pr" href="#">Clauree</a>
-    <button class="btn" id="copy">Copy script</button>
-  </div>
-  <p class="mu" id="bmnote">Preparing the button…</p>
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
 
-  <h2>Try it here</h2>
-  <p>This page copies the parts of Claude's chat the engine reads, so the demo runs the same code as the real thing. Send a few messages, then simulate a limit.</p>
-  <div class="row">
-    <button class="btn" id="lim">Simulate limit</button>
-    <button class="btn" id="rst">Clear limit</button>
-  </div>
-  <div id="demo">
-    <div id="msgs"></div>
-    <p id="bn"></p>
-    <div id="box" data-composer>
-      <div id="ed" contenteditable="true" data-ph="Message Claude…"></div>
-      <button id="snd" aria-label="Send message">➤</button>
-    </div>
-  </div>
-</main>
-<script>
-let code='';
-const bm=document.getElementById('bm'),note=document.getElementById('bmnote');
-fetch('/clauree.js').then(r=>r.text()).then(t=>{
-  code=t.replace(/__ORIGIN__/g,location.origin);
-  bm.href='javascript:'+encodeURIComponent(code+'\n;void 0');
-  note.textContent='Ready. If your browser refuses the drag, use Copy script and paste it into a new bookmark’s URL field after typing javascript: first.';
-}).catch(()=>note.textContent='Could not load the script. Refresh the page.');
-document.getElementById('copy').onclick=()=>{
-  const txt='javascript:'+encodeURIComponent(code+'\n;void 0');
-  navigator.clipboard.writeText(txt).then(()=>note.textContent='Copied.',()=>note.textContent='Copy failed. Drag the button instead.');
-};
-bm.addEventListener('click',e=>{e.preventDefault();note.textContent='Drag this button to your bookmarks bar. Clicking it here does nothing.'});
+    <!-- Navigation Header -->
+    <header class="sticky top-0 z-40 backdrop-blur-md bg-brand-100/80 dark:bg-brand-dark/80 border-b border-brand-border dark:border-brand-borderDark transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-brand-accent text-white flex items-center justify-center font-bold text-xl shadow-md">
+                    <i class="fa-solid fa-bolt-lightning text-white"></i>
+                </div>
+                <div>
+                    <span class="font-bold text-xl tracking-tight text-brand-textDark dark:text-white">Clauree</span>
+                    <span class="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-accent/10 text-brand-accent border border-brand-accent/20">v2.4 Free Tier Helper</span>
+                </div>
+            </div>
 
-let limited=false;
-const msgs=document.getElementById('msgs'),ed=document.getElementById('ed'),bn=document.getElementById('bn');
-function add(cls,text,attr){const d=document.createElement('div');if(attr)d.setAttribute('data-testid',attr);else d.className=cls;d.textContent=text;msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;return d}
-function send(){
-  const t=ed.innerText.trim();if(!t||limited)return;
-  add('', t,'user-message');ed.innerHTML='';
-  const r=add('font-claude-message','');
-  const full=('This is a simulated reply to show how Clauree measures your usage. '.repeat(2+Math.floor(Math.random()*5))).trim();
-  let i=0;const iv=setInterval(()=>{i+=12;r.textContent=full.slice(0,i);if(i>=full.length)clearInterval(iv)},80);
-}
-document.getElementById('snd').onclick=send;
-ed.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();send()}});
-document.getElementById('lim').onclick=()=>{
-  limited=true;const d=new Date(Date.now()+2*3600e3);
-  const h=d.getHours()%12||12,m=String(d.getMinutes()).padStart(2,'0'),ap=d.getHours()>=12?'PM':'AM';
-  bn.textContent='You have reached your usage limit. Your limit resets at '+h+':'+m+' '+ap+'.';
-};
-document.getElementById('rst').onclick=()=>{limited=false;bn.textContent=''};
-</script>
-<script src="/clauree.js"></script>
+            <nav class="hidden md:flex items-center gap-6 text-sm font-medium">
+                <a href="#installation" class="hover:text-brand-accent transition-colors">Installation</a>
+                <a href="#features" class="hover:text-brand-accent transition-colors">Features</a>
+                <a href="#sandbox" class="hover:text-brand-accent transition-colors">Live Sandbox</a>
+                <a href="#code" class="hover:text-brand-accent transition-colors">Bookmarklet Code</a>
+            </nav>
+
+            <div class="flex items-center gap-3">
+                <button id="theme-toggle" class="p-2.5 rounded-xl border border-brand-border dark:border-brand-borderDark bg-white dark:bg-brand-cardDark text-brand-textDark dark:text-white hover:border-brand-accent transition-colors" title="Toggle Light/Dark Theme">
+                    <i class="fa-solid fa-moon dark:hidden"></i>
+                    <i class="fa-solid fa-sun hidden dark:block text-amber-400"></i>
+                </button>
+                <a href="#sandbox" class="hidden sm:inline-flex items-center justify-center px-4 py-2 rounded-xl text-sm font-medium text-white bg-brand-accent hover:bg-brand-hover transition-colors shadow-sm">
+                    Try Interactive Demo
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow">
+        <!-- Hero Section -->
+        <section class="py-16 md:py-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto text-center relative overflow-hidden">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 text-xs font-semibold mb-6">
+                <i class="fa-solid fa-shield-halved"></i> Never Get Stalled Mid-Task Again
+            </div>
+            <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold text-brand-textDark dark:text-white tracking-tight leading-tight max-w-4xl mx-auto">
+                Break Through Claude Free-Tier Message Limits with <span class="text-brand-accent underline decoration-brand-accent/30 underline-offset-8">Clauree</span>
+            </h1>
+            <p class="mt-6 text-lg sm:text-xl text-brand-subtle dark:text-gray-300 max-w-2xl mx-auto font-normal">
+                An intelligent, ultra-lightweight bookmarklet and overlay toolkit designed to predict message limits, auto-queue responses, optimize prompt context with Grok, and export your context when you hit the limit.
+            </p>
+
+            <!-- Draggable Bookmarklet Action Box -->
+            <div id="installation" class="mt-10 p-6 sm:p-8 rounded-2xl bg-white dark:bg-brand-cardDark border border-brand-border dark:border-brand-borderDark max-w-2xl mx-auto shadow-xl relative glow-effect">
+                <div class="text-xs font-bold uppercase tracking-wider text-brand-subtle mb-3">Instant Installation (No Signup / No Extension Stores)</div>
+                <p class="text-sm text-brand-subtle dark:text-gray-400 mb-6">
+                    Drag the terracotta button below directly to your browser's <strong>Bookmarks Toolbar</strong>:
+                </p>
+
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <!-- The actual draggable bookmarklet link -->
+                    <a id="bookmarklet-link" href="#" class="drag-btn px-6 py-3.5 rounded-xl text-white font-bold text-base flex items-center gap-3 cursor-grab active:cursor-grabbing transition-all transform hover:-translate-y-0.5 active:translate-y-0 select-none">
+                        <i class="fa-solid fa-grip-dots-vertical"></i>
+                        <i class="fa-solid fa-bookmark"></i>
+                        <span>Clauree Helper</span>
+                    </a>
+                    
+                    <button onclick="copyBookmarkletCode()" class="px-5 py-3.5 rounded-xl border border-brand-border dark:border-brand-borderDark bg-brand-100 dark:bg-brand-dark hover:border-brand-accent text-sm font-medium transition-colors flex items-center gap-2">
+                        <i class="fa-regular fa-copy"></i>
+                        Copy Raw JS
+                    </button>
+                </div>
+
+                <div class="mt-6 flex items-center justify-center gap-6 text-xs text-brand-subtle dark:text-gray-400 border-t border-brand-border dark:border-brand-borderDark pt-4">
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-check text-emerald-500"></i> Your chats stay in your browser</span>
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-check text-emerald-500"></i> Privacy First</span>
+                    <span class="flex items-center gap-1.5"><i class="fa-solid fa-check text-emerald-500"></i> Works on Claude.ai</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Feature Grid -->
+        <section id="features" class="py-16 bg-white dark:bg-brand-dark/50 border-y border-brand-border dark:border-brand-borderDark transition-colors">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold text-brand-textDark dark:text-white">Engineered for Free-Tier Power Users</h2>
+                    <p class="text-brand-subtle dark:text-gray-400 mt-2">Essential utilities to stretch your free quotas further and bypass roadblocks.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Feature 1 -->
+                    <div class="p-6 rounded-2xl bg-brand-100 dark:bg-brand-cardDark border border-brand-border dark:border-brand-borderDark hover:border-brand-accent transition-all">
+                        <div class="w-12 h-12 rounded-xl bg-brand-accent/10 text-brand-accent flex items-center justify-center text-xl font-bold mb-4">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                        </div>
+                        <h3 class="text-lg font-bold mb-2">Emergency Limit Bypass</h3>
+                        <p class="text-xs text-brand-subtle dark:text-gray-400 leading-relaxed">
+                            Hit your limit? Copy a clean context pack for another AI, or queue your prompt so it sends itself when the limit resets.
+                        </p>
+                    </div>
+
+                    <!-- Feature 2 -->
+                    <div class="p-6 rounded-2xl bg-brand-100 dark:bg-brand-cardDark border border-brand-border dark:border-brand-borderDark hover:border-brand-accent transition-all">
+                        <div class="w-12 h-12 rounded-xl bg-brand-accent/10 text-brand-accent flex items-center justify-center text-xl font-bold mb-4">
+                            <i class="fa-solid fa-chart-pie"></i>
+                        </div>
+                        <h3 class="text-lg font-bold mb-2">Persistent Usage Dashboard</h3>
+                        <p class="text-xs text-brand-subtle dark:text-gray-400 leading-relaxed">
+                            A usage strip right above the chat box. Estimates token use, forecasts when you will hit the limit, and counts down to the reset time Claude shows.
+                        </p>
+                    </div>
+
+                    <!-- Feature 3 -->
+                    <div class="p-6 rounded-2xl bg-brand-100 dark:bg-brand-cardDark border border-brand-border dark:border-brand-borderDark hover:border-brand-accent transition-all">
+                        <div class="w-12 h-12 rounded-xl bg-brand-accent/10 text-brand-accent flex items-center justify-center text-xl font-bold mb-4">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <h3 class="text-lg font-bold mb-2">Grok Planning & Token Analyzer</h3>
+                        <p class="text-xs text-brand-subtle dark:text-gray-400 leading-relaxed">
+                            Refine and compress prompts in a side-drawer before hitting send. Evaluates draft token weight and flags high-risk limit triggering prompts.
+                        </p>
+                    </div>
+
+                    <!-- Feature 4 -->
+                    <div class="p-6 rounded-2xl bg-brand-100 dark:bg-brand-cardDark border border-brand-border dark:border-brand-borderDark hover:border-brand-accent transition-all">
+                        <div class="w-12 h-12 rounded-xl bg-brand-accent/10 text-brand-accent flex items-center justify-center text-xl font-bold mb-4">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                        </div>
+                        <h3 class="text-lg font-bold mb-2">Smart Queue & Auto-Resume</h3>
+                        <p class="text-xs text-brand-subtle dark:text-gray-400 leading-relaxed">
+                            Queue follow-up prompts while Claude is thinking. Queue a prompt and it is sent as soon as your limit resets (keep the tab open).
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Sandbox Simulator -->
+        <section id="sandbox" class="py-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row items-start md:items-end justify-between mb-8 gap-4">
+                <div>
+                    <span class="text-xs font-bold text-brand-accent tracking-widest uppercase">Live Test Environment</span>
+                    <h2 class="text-3xl font-bold text-brand-textDark dark:text-white mt-1">Interactive Clauree Sandbox</h2>
+                    <p class="text-sm text-brand-subtle dark:text-gray-400">
+                        Test how the Clauree overlay widgets behave inside a simulated Claude.ai web interface.
+                    </p>
+                </div>
+                <div class="flex flex-wrap items-center gap-2">
+                    <button onclick="simTriggerLimit()" class="px-3.5 py-2 rounded-xl bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/20 text-xs font-semibold hover:bg-amber-500/20 transition-colors">
+                        <i class="fa-solid fa-bolt"></i> Simulate Limit Reached
+                    </button>
+                    <button onclick="simResetUsage()" class="px-3.5 py-2 rounded-xl bg-brand-100 dark:bg-brand-cardDark border border-brand-border dark:border-brand-borderDark text-xs font-medium hover:border-brand-accent transition-colors">
+                        <i class="fa-solid fa-rotate"></i> Reset Quota
+                    </button>
+                </div>
+            </div>
+
+            <!-- Simulated Browser Frame -->
+            <div class="rounded-2xl border border-brand-border dark:border-brand-borderDark bg-white dark:bg-brand-cardDark shadow-2xl overflow-hidden relative min-h-[650px] flex flex-col">
+                <!-- Browser Header Bar -->
+                <div class="bg-brand-100 dark:bg-brand-dark px-4 py-3 border-b border-brand-border dark:border-brand-borderDark flex items-center justify-between text-xs text-brand-subtle">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-red-400 inline-block"></span>
+                        <span class="w-3 h-3 rounded-full bg-amber-400 inline-block"></span>
+                        <span class="w-3 h-3 rounded-full bg-emerald-400 inline-block"></span>
+                        <span class="ml-2 font-mono text-xs opacity-75 hidden sm:inline">https://claude.ai/chat/simulated-session</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <span class="text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                            <i class="fa-solid fa-circle text-[8px]"></i> Clauree Injected & Active
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Simulated Claude Main Canvas -->
+                <div id="sim-canvas" class="flex-grow flex flex-col justify-between p-4 sm:p-6 bg-brand-50 dark:bg-[#181716] relative overflow-y-auto">
+                    
+                    <!-- Chat Container -->
+                    <div id="sim-chat-messages" class="space-y-4 max-w-3xl mx-auto w-full pb-32">
+                        <!-- System Intro Banner -->
+                        <div class="p-4 rounded-xl bg-white dark:bg-brand-cardDark border border-brand-border dark:border-brand-borderDark text-xs text-brand-subtle dark:text-gray-300">
+                            <p class="font-bold text-brand-textDark dark:text-white mb-1"><i class="fa-solid fa-circle-info text-brand-accent"></i> Welcome to the Clauree Sandbox!</p>
+                            Send a few messages and watch the usage strip above the chat box. Type a long draft to see the next-prompt risk, open the planner with the star button, or press Simulate Limit Reached to see the limit bar.
+                        </div>
+
+                        <!-- Chat Message 1 -->
+                        <div class="flex gap-3">
+                            <div class="w-8 h-8 rounded-full bg-slate-700 text-white font-bold text-xs flex items-center justify-center shrink-0">U</div>
+                            <div class="bg-white dark:bg-brand-cardDark border border-brand-border dark:border-brand-borderDark p-3.5 rounded-2xl text-sm max-w-[85%] text-brand-textDark dark:text-gray-200" data-testid="user-message">
+                                Can you explain how Clauree manages to keep track of Claude's 5-hour rolling limit without an API key?
+                            </div>
+                        </div>
+
+                        <!-- Chat Message 2 -->
+                        <div class="flex gap-3">
+                            <div class="w-8 h-8 rounded-full bg-brand-accent text-white font-bold text-xs flex items-center justify-center shrink-0">C</div>
+                            <div class="bg-white/60 dark:bg-brand-dark/60 border border-brand-border dark:border-brand-borderDark p-3.5 rounded-2xl text-sm max-w-[85%] text-brand-textDark dark:text-gray-200 font-claude-message">
+                                Clauree passively monitors DOM mutations, token length approximations, and response status headers directly inside your browser tab. It estimates message consumption using model token heuristics and tracks sliding 5-hour windows locally in your browser cache.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="sim-banner" class="hidden max-w-3xl mx-auto w-full mb-28 p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-xs text-red-700 dark:text-red-300"></div>
+                    <!-- Bottom Fixed Input Dock inside Simulator -->
+                    <div class="absolute bottom-0 left-0 right-0 p-4 sm:p-6 bg-gradient-to-t from-brand-50 via-brand-50/90 to-transparent dark:from-[#181716] dark:via-[#181716]/90 flex flex-col items-center">
+                        
+                        <!-- Simulated Chat Input Area -->
+                        <div data-composer class="w-full max-w-3xl relative flex items-center">
+                            <div id="sim-prompt-input" contenteditable="true" role="textbox" data-ph="Send a message or test Clauree pre-send detection..." class="w-full min-h-[64px] max-h-40 overflow-y-auto p-3.5 pr-24 rounded-2xl bg-white dark:bg-brand-cardDark border border-brand-border dark:border-brand-borderDark focus:outline-none focus:border-brand-accent text-sm text-brand-textDark dark:text-white shadow-md"></div>
+                            <div class="absolute right-3 flex items-center gap-2">
+                                <button id="sim-send-btn" aria-label="Send message" onclick="sendSimPrompt()" class="p-2.5 rounded-xl bg-brand-accent text-white hover:bg-brand-hover transition-colors shadow-sm">
+                                    <i class="fa-solid fa-arrow-up"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Source Code Section -->
+        <section id="code" class="py-16 bg-white dark:bg-brand-dark/50 border-t border-brand-border dark:border-brand-borderDark">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-brand-textDark dark:text-white">Complete Bookmarklet Source Code</h2>
+                        <p class="text-xs text-brand-subtle dark:text-gray-400">Self-contained, zero-dependency JavaScript snippet that powers Clauree.</p>
+                    </div>
+                    <button onclick="copyBookmarkletCode()" class="px-4 py-2.5 rounded-xl bg-brand-accent text-white hover:bg-brand-hover text-xs font-semibold flex items-center gap-2 self-start md:self-auto transition-colors">
+                        <i class="fa-regular fa-copy"></i> Copy Bookmarklet Code
+                    </button>
+                </div>
+
+                <div class="rounded-2xl border border-brand-border dark:border-brand-borderDark bg-[#1E1C1B] text-gray-200 p-4 font-mono text-xs overflow-x-auto shadow-inner max-h-96">
+                    <pre><code id="code-block">javascript:(function(){
+    if(window.__claureeLoaded) { alert('Clauree is already active on this page.'); return; }
+    window.__claureeLoaded = true;
+
+    // Core Clauree State
+    const state = {
+        msgCount: 3,
+        maxMsgs: 10,
+        resetTime: Date.now() + (3*3600 + 24*60)*1000,
+        queuedPrompt: null
+    };
+
+    // Inject Widget Overlay into DOM
+    const container = document.createElement('div');
+    container.id = 'clauree-injected-root';
+    container.innerHTML = `
+        &lt;div style="position:fixed; bottom:80px; right:20px; z-index:999999; width:320px; background:#282524; color:#EAE6DF; border:1px solid #3D3937; border-radius:12px; font-family:sans-serif; box-shadow:0 10px 25px rgba(0,0,0,0.5); font-size:12px; overflow:hidden;"&gt;
+            &lt;div style="padding:10px 14px; background:#1C1A19; display:flex; justify-between; align-items:center; border-bottom:1px solid #3D3937;"&gt;
+                &lt;span style="font-weight:bold; color:#D95D39;"&gt;⚡ Clauree Helper&lt;/span&gt;
+                &lt;span id="clauree-timer" style="font-family:monospace; color:#fbbf24;"&gt;03h 24m&lt;/span&gt;
+            &lt;/div&gt;
+            &lt;div style="padding:12px;"&gt;
+                &lt;div style="display:flex; justify-content:space-between; margin-bottom:4px; font-size:11px;"&gt;
+                    &lt;span&gt;Quota Usage&lt;/span&gt;
+                    &lt;span id="clauree-usage-text"&gt;3 / 10 Msgs&lt;/span&gt;
+                &lt;/div&gt;
+                &lt;div style="width:100%; height:6px; background:#1C1A19; border-radius:3px; overflow:hidden; margin-bottom:10px;"&gt;
+                    &lt;div id="clauree-bar" style="width:30%; height:100%; background:#D95D39; transition:width 0.3s;"&gt;&lt;/div&gt;
+                &lt;/div&gt;
+                &lt;div style="display:flex; gap:6px;"&gt;
+                    &lt;button id="clauree-btn-export" style="flex:1; padding:6px; background:#3D3937; color:#fff; border:none; border-radius:6px; cursor:pointer;"&gt;Export Context&lt;/button&gt;
+                    &lt;button id="clauree-btn-close" style="padding:6px 10px; background:transparent; color:#8C857B; border:none; cursor:pointer;"&gt;✕&lt;/button&gt;
+                &lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    `;
+    document.body.appendChild(container);
+
+    // Passive DOM Monitor for Rate Limits
+    const observer = new MutationObserver(() => {
+        if(document.body.innerText.includes('Message limit reached') || document.body.innerText.includes('429')) {
+            alert('Clauree Emergency Fallback: Quota Block Detected! Open Clauree Menu to export context.');
+        }
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+})();</code></pre>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-brand-100 dark:bg-brand-dark border-t border-brand-border dark:border-brand-borderDark py-8 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-brand-subtle">
+            <div class="flex items-center gap-2">
+                <span class="font-bold text-brand-textDark dark:text-white">Clauree</span> &copy; 2026. Open source utility for Claude free-tier users.
+            </div>
+            <div>
+                Built for productivity & prompt optimization. Unofficial tool, not affiliated with Anthropic.
+            </div>
+        </div>
+    </footer>
+
+    <!-- Application Logic -->
+    <script>
+        localStorage.setItem('clr.cfg', JSON.stringify({composer:'#sim-prompt-input', send:'#sim-send-btn', user:'[data-testid="user-message"]', asst:'.font-claude-message', scope:'#sim-canvas'}));
+        let bmUrl = '', limited = false;
+        const $id = (i) => document.getElementById(i);
+
+        function showToast(message, type = 'info') {
+            const container = $id('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `p-3.5 rounded-xl text-xs font-semibold shadow-xl border backdrop-blur-md pointer-events-auto flex items-center gap-2 transition-all transform translate-y-2 opacity-0 ${
+                type === 'success' ? 'bg-emerald-600 text-white border-emerald-500' :
+                type === 'warning' ? 'bg-amber-600 text-white border-amber-500' :
+                'bg-brand-cardDark text-white border-brand-borderDark'}`;
+            toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-info'}"></i> <span></span>`;
+            toast.lastElementChild.textContent = message;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-y-2', 'opacity-0'), 10);
+            setTimeout(() => { toast.classList.add('opacity-0', '-translate-y-2'); setTimeout(() => toast.remove(), 300); }, 3500);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            $id('theme-toggle').addEventListener('click', () => document.documentElement.classList.toggle('dark'));
+            const b = $id('bookmarklet-link');
+            b.addEventListener('click', (e) => { e.preventDefault(); showToast('Drag this button to your bookmarks bar. Clicking it here does nothing.', 'warning'); });
+            fetch('/clauree.js').then((r) => r.text()).then((t) => {
+                bmUrl = 'javascript:' + encodeURIComponent(t.replace(/__ORIGIN__/g, location.origin) + '\n;void 0');
+                b.href = bmUrl;
+                $id('code-block').textContent = t;
+                const s = document.createElement('script'); s.src = '/clauree.js'; document.body.appendChild(s);
+            }).catch(() => showToast('Could not load clauree.js. Refresh the page.', 'warning'));
+            $id('sim-prompt-input').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendSimPrompt(); } });
+        });
+
+        function copyBookmarkletCode() {
+            if (!bmUrl) { showToast('Still loading. Try again in a second.', 'warning'); return; }
+            navigator.clipboard.writeText(bmUrl).then(
+                () => showToast('Copied. Paste it as the URL of a new bookmark.', 'success'),
+                () => showToast('Copy failed. Drag the button instead.', 'warning'));
+        }
+
+        function bubble(who, text) {
+            const u = who === 'u', c = $id('sim-chat-messages'), d = document.createElement('div');
+            d.className = 'flex gap-3';
+            d.innerHTML = `<div class="w-8 h-8 rounded-full ${u ? 'bg-slate-700' : 'bg-brand-accent'} text-white font-bold text-xs flex items-center justify-center shrink-0">${u ? 'U' : 'C'}</div><div class="${u ? 'bg-white dark:bg-brand-cardDark' : 'bg-white/60 dark:bg-brand-dark/60 font-claude-message'} border border-brand-border dark:border-brand-borderDark p-3.5 rounded-2xl text-sm max-w-[85%] text-brand-textDark dark:text-gray-200"${u ? ' data-testid="user-message"' : ''}></div>`;
+            d.lastElementChild.textContent = text;
+            c.appendChild(d);
+            const cv = $id('sim-canvas'); cv.scrollTop = cv.scrollHeight;
+        }
+
+        function sendSimPrompt() {
+            const ed = $id('sim-prompt-input'), t = ed.innerText.trim();
+            if (!t) return;
+            if (limited) { showToast('Claude would block this now. Use Queue and auto-send in the strip.', 'warning'); return; }
+            bubble('u', t); ed.innerHTML = '';
+            setTimeout(() => bubble('c', 'Simulated reply. '.repeat(3 + Math.floor(Math.random() * 8)).trim()), 800);
+        }
+
+        function simTriggerLimit() {
+            limited = true;
+            const d = new Date(Date.now() + 2 * 3600e3), h = d.getHours() % 12 || 12, m = String(d.getMinutes()).padStart(2, '0'), ap = d.getHours() >= 12 ? 'PM' : 'AM';
+            const b = $id('sim-banner');
+            b.textContent = "You've hit your usage limit and it resets at " + h + ':' + m + ' ' + ap + '.';
+            b.classList.remove('hidden');
+        }
+
+        function simResetUsage() {
+            limited = false;
+            $id('sim-banner').classList.add('hidden');
+            showToast('Limit cleared. Clauree starts a new window.', 'success');
+        }
+    </script>
 </body>
 </html>

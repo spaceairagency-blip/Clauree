@@ -2,11 +2,20 @@
 
 Usage strip above the Claude chat box: estimated limit use, forecast, reset countdown, prompt planner (Grok, Gemini fallback), queue-and-auto-send, and context copy.
 
+## Supabase (stores your data)
+Run `clauree-supabase.sql` once in Supabase > SQL Editor. It is safe to run again and never deletes your data.
+- `clauree_sync`: your limit hits and finished usage windows (numbers and times only, never chat text), found by a hash of your sync key.
+- `clauree_rate`: hourly request counters that protect your AI keys, shared across all servers.
+Without the two Supabase variables everything still works: the AI limit falls back to server memory and sync shows an error.
+
+Sync in the widget: Details > open the drawer (✦) > History > Turn on sync. Copy the key to another browser with I have a key.
+
 ## Deploy
 1. Push this folder to a GitHub repo and import it in Vercel (no build step).
 2. In Vercel > Settings > Environment Variables add:
    - `XAI_API_KEY` (your xAI key)
    - `GEMINI_API_KEY` (your Gemini key)
+   - `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (Supabase > Project Settings > API; the service role key is secret and is only used inside `api/`)
    - optional: `XAI_MODEL` (default `grok-3-mini`), `GEMINI_MODEL` (default `gemini-2.5-flash`)
 3. Redeploy, open your site, drag the Clauree button to your bookmarks bar, open claude.ai and click it.
 

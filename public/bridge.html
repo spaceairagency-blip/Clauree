@@ -5,11 +5,11 @@
 const OK = ['https://claude.ai', location.origin];
 addEventListener('message', async (e) => {
   if (!OK.includes(e.origin)) return;
-  const { id, body } = e.data || {};
+  const { id, body, path } = e.data || {};
   if (!id) return;
   let res;
   try {
-    const r = await fetch('/api/ai', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const r = await fetch(path === '/api/sync' ? '/api/sync' : '/api/ai', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     res = await r.json();
   } catch (x) { res = { error: 'Network error.' }; }
   e.source.postMessage({ id, res }, e.origin);

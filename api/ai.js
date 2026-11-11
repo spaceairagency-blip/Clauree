@@ -4,6 +4,8 @@ const P = {
   clarify: 'Rewrite the user prompt to remove ambiguity and repetition. If you must assume something, add one line at the end starting with "Assumed:". Return only the prompt.',
   plan: 'Split the user goal into the FEWEST dense, self-contained prompts to send to an AI chat assistant one after another, so a limited message budget is not wasted. Number them. Each prompt must say what to produce and what to skip. Return only the numbered prompts.',
 };
+const crypto = require('crypto');
+const { rl } = require('./_lib/sb');
 const hits = new Map();
 const ALLOW = ['https://claude.ai', 'https://www.codelyteam.com'];
 
@@ -36,9 +38,13 @@ module.exports = async (req, res) => {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
   const ip = String(req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'x';
-  const now = Date.now(), list = (hits.get(ip) || []).filter((t) => now - t < 3600e3);
-  if (list.length >= 30) return res.status(429).json({ error: 'Too many requests. Try again in a while.' });
-  list.push(now); hits.set(ip, list);
+  const hashed = crypto.createHash('sha256').update((process.env.SUPABASE_URL || 'clauree') + '|' + ip).digest('hex').slice(0, 40);
+  let ok = await rl('ai:' + hashed, 30); // shared across all servers; null = Supabase not available
+  if (ok === null) {
+    const now = Date.now(), list = (hits.get(ip) || []).filter((t) => now - t < 3600e3);
+    ok = list.length < 30; if (ok) { list.push(now); hits.set(ip, list); }
+  }
+  if (!ok) return res.status(429).json({ error: 'Too many requests. Try again in a while.' });
 
   const { mode, text, budget } = req.body || {};
   if (!P[mode]) return res.status(400).json({ error: 'Unknown mode.' });
