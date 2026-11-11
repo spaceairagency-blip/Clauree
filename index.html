@@ -6,228 +6,80 @@
     <title>Clauree ⚡ — AI Optimization Suite for Claude</title>
     <style>
         :root {
-            --bg-primary: #0f172a;
-            --bg-secondary: #1e293b;
-            --accent: #6366f1;
-            --accent-hover: #4f46e5;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border: #334155;
+            --bg-primary: #0f172a; --bg-secondary: #1e293b;
+            --accent: #6366f1; --accent-hover: #4f46e5;
+            --text-main: #f8fafc; --text-muted: #94a3b8; --border: #334155;
         }
-        body {
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-main);
-            margin: 0;
-            padding: 2rem;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            box-sizing: border-box;
-        }
-        .container {
-            width: 100%;
-            max-width: 600px;
-            background: var(--bg-secondary);
-            padding: 2.5rem;
-            border-radius: 16px;
-            border: 1px solid var(--border);
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-            text-align: center;
-        }
-        .logo {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 50%;
-            border: 2px solid var(--accent);
-            margin-bottom: 1rem;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-        }
+        body { font-family: system-ui, sans-serif; background: var(--bg-primary); color: var(--text-main); margin: 0; padding: 2rem; display: flex; justify-content: center; align-items: center; min-height: 100vh; box-sizing: border-box; }
+        .container { width: 100%; max-width: 600px; background: var(--bg-secondary); padding: 2.5rem; border-radius: 16px; border: 1px solid var(--border); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); text-align: center; }
+        .logo { width: 80px; height: 80px; object-fit: cover; border-radius: 50%; border: 2px solid var(--accent); margin-bottom: 1rem; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3); }
         h1 { margin-top: 0; font-size: 2rem; color: #fff; }
         p { color: var(--text-muted); line-height: 1.5; }
-        .bookmarklet-box {
-            background: #0b0f19;
-            padding: 1.5rem;
-            border-radius: 12px;
-            border: 1px dashed var(--border);
-            margin: 1.5rem 0;
-        }
-        .bookmarklet-btn {
-            display: inline-block;
-            padding: 14px 28px;
-            background: var(--accent);
-            color: white;
-            border-radius: 8px;
-            text-decoration: none;
-            font-weight: bold;
-            cursor: grab;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
-            transition: background 0.2s, transform 0.1s;
-        }
-        .bookmarklet-btn:hover { background: var(--accent-hover); transform: translateY(-2px); }
-        .config-section {
-            text-align: left;
-            margin-top: 2rem;
-            border-top: 1px solid var(--border);
-            padding-top: 1.5rem;
-        }
+        .bookmarklet-box { background: #0b0f19; padding: 1.5rem; border-radius: 12px; border: 1px dashed var(--border); margin: 1.5rem 0; }
+        .bookmarklet-btn { display: inline-block; padding: 14px 28px; background: var(--accent); color: white; border-radius: 8px; text-decoration: none; font-weight: bold; cursor: grab; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4); }
+        .config-section { text-align: left; margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1.5rem; }
         .config-section label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; }
-        .config-section input {
-            width: 100%;
-            padding: 10px;
-            border-radius: 6px;
-            background: #0f172a;
-            border: 1px solid var(--border);
-            color: #fff;
-            box-sizing: border-box;
-            font-family: monospace;
-        }
-        .instructions {
-            text-align: left;
-            background: #172033;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-top: 1.5rem;
-            font-size: 0.9rem;
-        }
-        .instructions ol { margin: 0; padding-left: 20px; color: var(--text-muted); }
-        .instructions li { margin-bottom: 6px; }
+        .config-section input { width: 100%; padding: 10px; border-radius: 6px; background: #0f172a; border: 1px solid var(--border); color: #fff; box-sizing: border-box; font-family: monospace; }
     </style>
 </head>
 <body>
-
     <div class="container">
-        <!-- Logo Added Here -->
         <img src="https://i.postimg.cc/CKQDjDyk/5aebc1b8-4fe4-418c-9720-20abdf0244eb.webp" alt="Clauree Logo" class="logo">
-        
         <h1>Clauree Suite ⚡</h1>
         <p>Your lightweight, bookmarklet-based AI optimization suite for Claude AI, managed securely via Wispbyte backend infrastructure.</p>
 
         <div class="bookmarklet-box">
             <p style="margin-top: 0; font-size: 0.9rem; color: #cbd5e1;">Drag this button to your bookmarks toolbar:</p>
-            <!-- Dynamic Bookmarklet Generator Link -->
             <a class="bookmarklet-btn" id="main-bookmarklet" href="#">⚡ Clauree v1.0</a>
         </div>
 
         <div class="config-section">
             <label for="backend-url">Wispbyte Backend API Endpoint:</label>
-            <input type="text" id="backend-url" value="https://clauree-backend.wispbyte.app:14479" ...>
-        </div>
-
-        <div class="instructions">
-            <strong>How to use:</strong>
-            <ol>
-                <li>Ensure your bookmarks bar is visible (Ctrl+Shift+B).</li>
-                <li>Drag the <strong>⚡ Clauree v1.0</strong> button into your bookmarks bar.</li>
-                <li>Navigate to <a href="https://claude.ai" target="_blank" style="color: #818cf8;">claude.ai</a> and click your new bookmarklet to launch the interface overlay.</li>
-            </ol>
+            <input type="text" id="backend-url" value="https://clauree-backend.wispbyte.app:14479" placeholder="Enter Wispbyte endpoint...">
         </div>
     </div>
 
     <script>
-        // Automatically compile the bookmarklet payload with the specified Wispbyte backend endpoint
         const backendInput = document.getElementById('backend-url');
         const bookmarkletLink = document.getElementById('main-bookmarklet');
 
         function updateBookmarklet() {
-            const endpoint = backendInput.value.trim();
-            
-            // The self-contained app payload that injects into Claude
+            const endpoint = backendInput.value.trim().replace(/\/+$/, '');
             const payloadCode = `(function(){
                 if(document.getElementById('clauree-root')) return alert('Clauree is already active!');
-                window.CLAREEE_API = "${endpoint}";
-                
+                window.CLAUREE_API = ${JSON.stringify(endpoint)};
                 const root = document.createElement('div');
                 root.id = 'clauree-root';
-                root.innerHTML = \`
-                    <div id="clauree-panel">
-                        <div class="clauree-header">
-                            <span>Clauree Suite ⚡</span>
-                            <button id="clauree-close">&times;</button>
-                        </div>
-                        <div class="clauree-tabs">
-                            <button class="tab-btn active" data-tab="prompts">Prompts</button>
-                            <button class="tab-btn" data-tab="tracker">Usage</button>
-                            <button class="tab-btn" data-tab="queue">Queue</button>
-                        </div>
-                        <div class="clauree-content">
-                            <div id="tab-prompts" class="tab-page active">
-                                <label style="font-size:11px; color:#9ca3af;">Grok Prompt Template Studio:</label>
-                                <select id="clauree-prompt-select">
-                                    <option value="refactor">💻 Grok Refactor & Code Audit</option>
-                                    <option value="explainer">💡 Deep Technical Breakdown</option>
-                                    <option value="optimize">⚡ High-Efficiency Token Compressor</option>
-                                </select>
-                                <button id="clauree-inject-btn">Inject to Claude</button>
-                            </div>
-                            <div id="tab-tracker" class="tab-page">
-                                <div style="display:flex; justify-content:space-between; margin-bottom:6px;"><span>Wispbyte Status:</span> <strong style="color:#10b981;">Connected 🟢</strong></div>
-                                <div style="display:flex; justify-content:space-between;"><span>Active Queue:</span> <strong>0 Tasks</strong></div>
-                            </div>
-                            <div id="tab-queue" class="tab-page">
-                                <textarea id="queue-input" placeholder="Paste batch prompts..." style="width:100%; height:60px; background:#111; color:#fff; border:1px solid #333; border-radius:4px; padding:4px; font-size:12px; resize:none;"></textarea>
-                                <button id="clauree-start-queue" style="width:100%; margin-top:6px; background:#6366f1; color:#fff; border:none; padding:6px; border-radius:4px; cursor:pointer; font-weight:bold;">Run Batch</button>
-                            </div>
-                        </div>
-                    </div>
-                    <style>
-                        #clauree-panel { position: fixed; bottom: 20px; right: 20px; width: 320px; background: #0f172a; color: #f8fafc; border-radius: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 999999; font-family: sans-serif; border: 1px solid #334155; overflow: hidden; }
-                        .clauree-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #1e293b; font-weight: bold; font-size: 13px; }
-                        #clauree-close { background: none; border: none; color: #94a3b8; font-size: 18px; cursor: pointer; }
-                        .clauree-tabs { display: flex; background: #0f172a; border-bottom: 1px solid #334155; }
-                        .tab-btn { flex: 1; padding: 8px; background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 12px; }
-                        .tab-btn.active { color: #818cf8; border-bottom: 2px solid #6366f1; font-weight: bold; }
-                        .clauree-content { padding: 12px; font-size: 12px; }
-                        .tab-page { display: none; }
-                        .tab-page.active { display: block; }
-                        select, #clauree-inject-btn { width: 100%; margin-top: 8px; padding: 6px; border-radius: 4px; background: #1e293b; border: 1px solid #334155; color: white; box-sizing: border-box; }
-                        #clauree-inject-btn { background: #6366f1; font-weight: bold; cursor: pointer; }
-                    </style>
-                \`;
+                root.innerHTML = '<div id="clauree-panel"><div style="display:flex;justify-content:space-between;align-items:center"><span>Clauree Suite ⚡</span><button id="clauree-close" style="background:none;border:0;color:#fff;font-size:18px;cursor:pointer">&times;</button></div><div style="margin-top:8px"><strong id="clauree-status">Checking backend…</strong></div></div><style>#clauree-panel{position:fixed;bottom:20px;right:20px;width:280px;background:#0f172a;color:#fff;padding:12px;border-radius:8px;z-index:999999;border:1px solid #334155;font-family:sans-serif;}</style>';
                 document.body.appendChild(root);
-
-                root.querySelectorAll('.tab-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                        root.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                        root.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
-                        btn.classList.add('active');
-                        root.querySelector('#tab-' + btn.dataset.tab).classList.add('active');
-                    });
-                });
-
-                root.querySelector('#clauree-close').addEventListener('click', () => root.remove());
-
-                const grokTemplates = {
-                    refactor: "Act as a senior software architect. Analyze the provided code for runtime efficiency, edge-case safety, and clean formatting:",
-                    explainer: "Break down the core logic into clear, highly digestible engineering components with actionable examples:",
-                    optimize: "Refine and compress the following prompt context while completely retaining its semantic goals and execution variables:"
-                };
-
-                root.querySelector('#clauree-inject-btn').addEventListener('click', () => {
-                    const type = root.querySelector('#clauree-prompt-select').value;
-                    const text = grokTemplates[type];
-                    const target = document.querySelector('div[contenteditable="true"]') || document.querySelector('textarea');
-                    if(target) {
-                        if(target.tagName === 'TEXTAREA') {
-                            target.value = text + target.value;
-                            target.dispatchEvent(new Event('input', { bubbles: true }));
-                        } else {
-                            target.focus();
-                            document.execCommand('insertText', false, text);
-                        }
-                    } else {
-                        alert('Could not locate active chat prompt box.');
-                    }
-                });
+                document.getElementById('clauree-close').onclick = function(){ root.remove(); };
+                var st = document.getElementById('clauree-status');
+                fetch(window.CLAUREE_API + '/health')
+                    .then(function(r){ if(!r.ok) throw new Error(r.status); st.textContent = 'Connected to Wispbyte 🟢'; })
+                    .catch(function(e){ st.textContent = 'Backend unreachable 🔴 (' + e.message + ')'; });
             })();`;
-
             bookmarkletLink.href = "javascript:" + encodeURIComponent(payloadCode);
         }
-
         backendInput.addEventListener('input', updateBookmarklet);
         updateBookmarklet();
+
+        // Live status check for the endpoint on this page
+        const statusEl = document.createElement('p');
+        statusEl.style.cssText = 'margin:0.75rem 0 0;font-size:0.85rem';
+        document.querySelector('.config-section').appendChild(statusEl);
+        async function checkBackend() {
+            const url = backendInput.value.trim().replace(/\/+$/, '');
+            statusEl.textContent = 'Checking…';
+            try {
+                const r = await fetch(url + '/health');
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                statusEl.textContent = '🟢 Backend online';
+            } catch (e) {
+                statusEl.textContent = '🔴 Backend unreachable (' + e.message + ') — check the port and http vs https';
+            }
+        }
+        backendInput.addEventListener('change', checkBackend);
+        checkBackend();
     </script>
 </body>
 </html>
