@@ -39,3 +39,14 @@ begin
 end $$;
 
 revoke all on function clauree_hit(text, int) from public, anon, authenticated;
+
+-- Cutoff log (added later): one short note per limit hit, never the chat text.
+create table if not exists clauree_log (
+  id       bigint generated always as identity primary key,
+  key_hash text   not null,
+  t        bigint not null,
+  stats    jsonb  not null default '{}',
+  note     text   not null default ''
+);
+create index if not exists clauree_log_key_t on clauree_log (key_hash, t desc);
+alter table clauree_log enable row level security;

@@ -33,3 +33,22 @@ Claude's page can change. Selectors and the limit-banner pattern are at the top 
 1. The strip appears above the chat box.
 2. After you send a message and Claude answers, "messages" goes up in Details.
 3. When you hit the limit, the bar changes to "Limit reached" and shows a reset time. If it does not, copy the exact limit message and adjust `banner()` / `parseReset()`.
+
+## Mobile
+- **iPhone (Safari):** on the install page, add any bookmark, then edit it and paste the copied script as its URL. Open claude.ai and tap the bookmark from the bookmarks menu each time.
+- **Android (Firefox):** best option. Build the extension (below), or use the bookmarklet: type the bookmark's name in the address bar and tap the suggestion.
+- **The Claude app itself cannot be extended.** Use claude.ai in the browser, or the Clauree app (PWA) next to it.
+
+### Extension (Firefox Android, and desktop Chrome / Edge / Firefox)
+1. `node scripts/build-extension.js https://YOUR-SITE.vercel.app`
+2. Desktop: load `extension/dist` as an unpacked extension. Firefox Android: zip the contents of `extension/dist` and submit it to addons.mozilla.org (free developer account) for signing, then install it from there.
+The extension runs automatically on every claude.ai page. Rebuild and resubmit it when `public/clauree.js` changes.
+
+### Clauree app (PWA) at /app/
+Open `https://YOUR-SITE.vercel.app/app/` on your phone and choose Add to Home screen. It never keeps an old copy: every file is fetched fresh, so each push to GitHub (which Vercel deploys) reaches the app on its next launch, and the app reloads itself when an update lands. On Android, installed PWAs appear in the Share menu, so you can share text from the Claude app straight into Clauree.
+
+## Run locally
+1. `cp .env.example .env.local` and fill in your keys (never commit `.env.local`).
+2. `node scripts/dev.js` (Node 18 or newer, nothing to install).
+3. Open http://localhost:3000 (site), /dashboard.html, and /app/ (the PWA).
+Without keys the pages still load; the AI endpoints answer "Both AI providers failed" and sync says it is not set up.

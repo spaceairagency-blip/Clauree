@@ -9,7 +9,7 @@ addEventListener('message', async (e) => {
   if (!id) return;
   let res;
   try {
-    const r = await fetch(path === '/api/sync' ? '/api/sync' : '/api/ai', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+    const r = await fetch(['/api/sync', '/api/chat'].includes(path) ? path : '/api/ai', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
     res = await r.json();
   } catch (x) { res = { error: 'Network error.' }; }
   e.source.postMessage({ id, res }, e.origin);

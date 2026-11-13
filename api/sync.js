@@ -29,7 +29,11 @@ module.exports = async (req, res) => {
   try {
     const rows = await sb(`clauree_sync?key_hash=eq.${kh}&select=hits,hist`);
     const cur = (rows && rows[0]) || { hits: [], hist: [] };
-    if (action === 'get') return res.status(200).json({ hits: cur.hits, hist: cur.hist });
+    if (action === 'get') {
+      let log = [];
+      try { log = await sb(`clauree_log?key_hash=eq.${kh}&select=t,stats,note&order=t.desc&limit=30`); } catch (e) { /* table not created yet */ }
+      return res.status(200).json({ hits: cur.hits, hist: cur.hist, log });
+    }
     if (action !== 'put') return res.status(400).json({ error: 'Unknown action.' });
     const out = { hits: merge(list(cur.hits), cleanHits(hits), 't', 10), hist: merge(list(cur.hist), cleanHist(hist), 's', 30) };
     await sb('clauree_sync?on_conflict=key_hash', {

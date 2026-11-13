@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Clauree</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#d95d39">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+:root{--bg:#faf7f2;--fg:#2d2b2a;--mu:#8c857b;--bd:#e5e2dc;--ac:#d95d39;--cd:#fff}
+@media(prefers-color-scheme:dark){:root{--bg:#121110;--fg:#eae6df;--bd:#3d3937;--cd:#282524}}
+*{box-sizing:border-box}html,body{margin:0}body{background:var(--bg);color:var(--fg);font:16px/1.5 system-ui,sans-serif;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+header{padding:14px 16px;border-bottom:1px solid var(--bd);display:flex;gap:10px;align-items:baseline}header b{font-size:18px}
+main{max-width:720px;margin:0 auto;padding:14px 16px 40px}
+nav{display:flex;gap:8px;margin-bottom:14px}nav button{flex:1}
+button,input,textarea,select{font:inherit;color:inherit;background:var(--cd);border:1px solid var(--bd);border-radius:12px;padding:10px 12px;min-height:44px}
+button{cursor:pointer}button.on,button.pr{background:var(--ac);border-color:var(--ac);color:#fff}
+textarea{width:100%;min-height:110px;margin:8px 0}.card{background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px}
+.mu{color:var(--mu)}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.big{font-size:34px;font-weight:700;font-variant-numeric:tabular-nums}
+.msg{margin:10px 0;white-space:pre-wrap;word-break:break-word}.me{background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:10px 12px;margin-left:auto;width:fit-content;max-width:88%}
+pre{white-space:pre-wrap;background:#0002;padding:10px;border-radius:10px;margin:6px 0;font-size:13px}a.btn{display:inline-block;text-decoration:none;background:var(--ac);color:#fff;border-radius:12px;padding:10px 14px}
+input[type=number]{width:90px}
+</style>
+</head>
+<body>
+<header><b>Clauree</b><span class="mu">always the latest version</span></header>
+<main>
+  <nav><button data-t="chat" class="on">Chat</button><button data-t="timer">Limit timer</button><button data-t="opt">Optimize</button></nav>
+
+  <section id="t-chat">
+    <div id="cm"></div>
+    <textarea id="ci" placeholder="Ask Clauree, or paste a Claude conversation to continue it"></textarea>
+    <div class="row"><button class="pr" id="sd">Send</button><button id="cl">Clear</button><span class="mu" id="cs"></span></div>
+  </section>
+
+  <section id="t-timer" hidden>
+    <div class="card">
+      <div class="mu">Claude tells you when your limit resets. Enter it here.</div>
+      <div class="row" style="margin:10px 0">Resets in <input id="th" type="number" min="0" max="24" placeholder="h"> h <input id="tm" type="number" min="0" max="59" placeholder="m"> m</div>
+      <textarea id="tp" placeholder="Optional: the message you want to send when the limit resets"></textarea>
+      <div class="row"><button class="pr" id="ts">Start timer</button><button id="tn">Notify me</button><button id="tx">Cancel</button></div>
+    </div>
+    <div class="card" id="tc" hidden><div class="mu" id="tl">Limit resets in</div><div class="big" id="tt">--</div><div id="tr"></div></div>
+    <p class="mu">Reminders only fire while this app is open. They cannot arrive when it is closed.</p>
+  </section>
+
+  <section id="t-opt" hidden>
+    <div class="card">
+      <select id="md"><option value="polish">Fewer tokens + clean grammar</option><option value="compress">Compress</option><option value="structure">Structured prompt</option><option value="clarify">Remove ambiguity</option><option value="plan">Plan a series of prompts</option></select>
+      <textarea id="oi" placeholder="Paste your prompt"></textarea>
+      <div class="row"><button class="pr" id="go">Optimize</button><span class="mu" id="om"></span></div>
+      <textarea id="oo" placeholder="Result"></textarea>
+      <div class="row"><button id="cp">Copy</button><a class="btn" id="oc" href="#" target="_blank" rel="noopener" hidden>Open in Claude</a></div>
+    </div>
+  </section>
+</main>
+<script>
+const $ = (s) => document.querySelector(s), $$ = (s) => [...document.querySelectorAll(s)];
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => '&#' + c.charCodeAt(0) + ';');
+const est = (t) => { const n = t.length; if (!n) return 0; const na = (t.match(/[^\x00-\x7f]/g) || []).length; const code = (t.match(/[{}();=<>\/]/g) || []).length / n > .06; return Math.ceil((n - na) / (code ? 3 : 3.8) + na / 1.5); };
+const claudeUrl = (t) => 'https://claude.ai/new?q=' + encodeURIComponent(t);
+const ls = { get: (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } }, set: (k, v) => localStorage.setItem(k, JSON.stringify(v)) };
+async function post(p, b) { try { const r = await fetch(p, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b) }); return await r.json(); } catch (e) { return { error: 'Network error.' }; } }
+
+function tab(t) { $$('section').forEach((s) => (s.hidden = s.id !== 't-' + t)); $$('nav button').forEach((b) => b.classList.toggle('on', b.dataset.t === t)); }
+$$('nav button').forEach((b) => (b.onclick = () => tab(b.dataset.t)));
+
+/* chat */
+let H = ls.get('clrapp.chat', []);
+function paint() {
+  $('#cm').innerHTML = H.map((m) => (m.role === 'user' ? `<div class="msg me">${esc(m.content)}</div>`
+    : `<div class="msg">${m.content.split('```').map((p, i) => (i % 2 ? `<pre>${esc(p.replace(/^[^\n]*\n/, ''))}</pre><button data-cp>Copy code</button>` : esc(p))).join('')}${m.by ? `<div class="mu">Clauree · ${esc(m.by)}</div>` : ''}</div>`)).join('');
+  window.scrollTo(0, document.body.scrollHeight);
+}
+$('#cm').onclick = (e) => { if (e.target.dataset.cp !== undefined) navigator.clipboard.writeText(e.target.previousElementSibling.textContent); };
+$('#sd').onclick = async () => {
+  const t = $('#ci').value.trim(); if (!t) return;
+  $('#ci').value = ''; H.push({ role: 'user', content: t }); paint(); $('#cs').textContent = 'Thinking…';
+  const r = await post('/api/chat', { messages: H.filter((m) => !m.err).map((m) => ({ role: m.role, content: m.content })).slice(-40) });
+  H.push(r.text ? { role: 'assistant', content: r.text, by: r.provider } : { role: 'assistant', content: 'Error: ' + (r.error || 'no answer'), err: 1 });
+  H = H.slice(-40); ls.set('clrapp.chat', H); $('#cs').textContent = ''; paint();
+};
+$('#cl').onclick = () => { H = []; ls.set('clrapp.chat', H); paint(); };
+paint();
+{ // text shared from the Claude app (Android: Share > Clauree)
+  const q = new URLSearchParams(location.search), s = ['title', 'text', 'url'].map((k) => q.get(k)).filter(Boolean).join('\n');
+  if (s) { $('#ci').value = 'Continue from this:\n\n' + s; history.replaceState(null, '', location.pathname); }
+}
+
+/* limit timer */
+let T = ls.get('clrapp.timer', null);
+const pad = (n) => String(n).padStart(2, '0');
+function ring() {
+  const body = 'Your Claude limit should have reset.';
+  navigator.serviceWorker && navigator.serviceWorker.ready.then((r) => r.showNotification('Clauree', { body })).catch(() => { try { new Notification('Clauree', { body }); } catch (e) { /* no permission */ } });
+  navigator.vibrate && navigator.vibrate([200, 100, 200]);
+}
+function tick() {
+  $('#tc').hidden = !T; if (!T) return;
+  const left = T.end - Date.now();
+  if (left <= 0) {
+    $('#tl').textContent = 'Done'; $('#tt').textContent = '00:00:00';
+    $('#tr').innerHTML = `<p>Your limit should have reset.</p>${T.prompt ? `<a class="btn" target="_blank" rel="noopener" href="${claudeUrl(T.prompt)}">Open in Claude</a> <button id="tcp">Copy message</button>` : ''}`;
+    if (!T.rung) { T.rung = 1; ls.set('clrapp.timer', T); ring(); }
+    return;
+  }
+  const s = Math.floor(left / 1000);
+  $('#tl').textContent = 'Limit resets in'; $('#tt').textContent = `${pad(Math.floor(s / 3600))}:${pad(Math.floor(s / 60) % 60)}:${pad(s % 60)}`; $('#tr').textContent = '';
+}
+$('#tr').onclick = (e) => { if (e.target.id === 'tcp') navigator.clipboard.writeText(T.prompt); };
+$('#ts').onclick = () => {
+  const ms = ((+$('#th').value || 0) * 60 + (+$('#tm').value || 0)) * 60000; if (!ms) return;
+  T = { end: Date.now() + ms, prompt: $('#tp').value.trim(), rung: 0 }; ls.set('clrapp.timer', T); tick();
+};
+$('#tx').onclick = () => { T = null; localStorage.removeItem('clrapp.timer'); tick(); };
+$('#tn').onclick = () => { if ('Notification' in window) Notification.requestPermission(); };
+setInterval(tick, 1000); tick();
+
+/* optimizer */
+$('#go').onclick = async () => {
+  const t = $('#oi').value.trim(); if (!t) return;
+  $('#om').textContent = 'Working…';
+  const r = await post('/api/ai', { mode: $('#md').value, text: t });
+  if (r.text) { $('#oo').value = r.text; $('#om').textContent = 'Done with ' + r.provider + ($('#md').value === 'plan' ? '' : ` · ~${est(t)} → ~${est(r.text)} tokens`); $('#oc').href = claudeUrl(r.text); $('#oc').hidden = false; }
+  else $('#om').textContent = r.error || 'Something went wrong.';
+};
+$('#cp').onclick = () => navigator.clipboard.writeText($('#oo').value);
+
+/* always run the newest version: check for updates often and reload when a new one takes over */
+if ('serviceWorker' in navigator) {
+  const first = !navigator.serviceWorker.controller; let seen = first;
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).then((r) => {
+    const chk = () => r.update().catch(() => {});
+    setInterval(chk, 15 * 60 * 1000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) chk(); });
+  });
+  navigator.serviceWorker.addEventListener('controllerchange', () => { if (seen) { seen = false; return; } location.reload(); });
+}
+</script>
+</body>
+</html>

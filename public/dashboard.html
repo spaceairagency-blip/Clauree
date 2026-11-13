@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Clauree dashboard</title>
+<link rel="icon" href="/logo.png">
+<style>
+:root{--bg:#faf7f2;--fg:#2d2b2a;--mu:#8c857b;--bd:#e5e2dc;--ac:#d95d39;--cd:#fff}
+@media(prefers-color-scheme:dark){:root{--bg:#121110;--fg:#eae6df;--bd:#3d3937;--cd:#282524}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,sans-serif}
+header{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--bd)}
+header img{width:36px;height:36px;border-radius:10px;object-fit:cover}
+main{max-width:860px;margin:0 auto;padding:20px}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+button,select,textarea,input{font:inherit;color:inherit;background:var(--cd);border:1px solid var(--bd);border-radius:10px;padding:8px 12px}
+button{cursor:pointer}button.on,button.pr{background:var(--ac);border-color:var(--ac);color:#fff}
+.card{background:var(--cd);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:14px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px}.big{font-size:26px;font-weight:700}.mu{color:var(--mu)}
+textarea{width:100%;min-height:120px;margin:8px 0}pre{white-space:pre-wrap;background:#0002;padding:10px;border-radius:8px;margin:6px 0}
+.msg{margin:10px 0;white-space:pre-wrap}.me{text-align:right}li{margin:6px 0}h3{margin:20px 0 6px}
+</style>
+</head>
+<body>
+<header><img src="/logo.png" alt="" onerror="this.style.display='none'"><b>Clauree</b><span class="mu">dashboard</span></header>
+<main>
+  <div class="card" id="wl" hidden><b>You are set.</b> Open claude.ai and click your Clauree bookmark. The usage strip appears above the chat box.</div>
+  <nav>
+    <button data-t="usage" class="on">Usage</button><button data-t="opt">Optimizer</button><button data-t="chat">Chat</button><button data-t="guide">Guide</button>
+  </nav>
+
+  <section id="t-usage">
+    <p class="mu" id="cn">Not connected. Open this from the Dashboard button in the Clauree drawer on claude.ai, or load your history with a sync key.</p>
+    <div class="card"><input id="key" placeholder="Sync key (optional)" style="width:70%"> <button id="ld">Load</button></div>
+    <div id="us"></div>
+    <h3>Limit hits</h3><div id="hl"></div>
+    <h3>Past windows</h3><div id="wd"></div>
+    <h3>Cutoff log</h3><div id="cl"></div>
+  </section>
+
+  <section id="t-opt" hidden>
+    <div class="card">
+      <select id="md"><option value="polish">Fewer tokens + clean grammar</option><option value="compress">Compress</option><option value="structure">Structured prompt</option><option value="clarify">Remove ambiguity</option><option value="plan">Plan a series of prompts</option></select>
+      <textarea id="oi" placeholder="Paste your prompt or goal"></textarea>
+      <button class="pr" id="go">Optimize</button> <span class="mu" id="om"></span>
+      <textarea id="oo" placeholder="Result"></textarea>
+      <button id="cp">Copy</button>
+    </div>
+  </section>
+
+  <section id="t-chat" hidden>
+    <div class="card"><div id="cm"></div><textarea id="ci" placeholder="Ask Clauree anything"></textarea><button class="pr" id="sd">Send</button></div>
+  </section>
+
+  <section id="t-guide" hidden>
+    <div class="card">
+      <ol>
+        <li>Open claude.ai and click the Clauree bookmark. The strip appears above the chat box.</li>
+        <li>Type a draft: a warning shows its token cost with a one-click optimizer.</li>
+        <li>When Claude cuts you off, the response gets a Limit reached tag and Clauree logs why.</li>
+        <li>Use Continue with Clauree to keep chatting, or Queue to send when the limit resets.</li>
+        <li>Turn on sync in the drawer (History tab) to see your history here on any device.</li>
+      </ol>
+    </div>
+  </section>
+</main>
+<script>
+const $ = (s) => document.querySelector(s), $$ = (s) => [...document.querySelectorAll(s)];
+const est = (t) => { const n = t.length; if (!n) return 0; const na = (t.match(/[^\x00-\x7f]/g) || []).length; const code = (t.match(/[{}();=<>\/]/g) || []).length / n > .06; return Math.ceil((n - na) / (code ? 3 : 3.8) + na / 1.5); };
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"]/g, (c) => '&#' + c.charCodeAt(0) + ';');
+const kf = (n) => (n >= 1000 ? (n / 1000).toFixed(1) + 'k' : String(Math.round(n || 0)));
+function tab(t) { $$('section').forEach((s) => (s.hidden = s.id !== 't-' + t)); $$('nav button').forEach((b) => b.classList.toggle('on', b.dataset.t === t)); }
+$$('nav button').forEach((b) => (b.onclick = () => tab(b.dataset.t)));
+if (/welcome/.test(location.search)) $('#wl').hidden = false;
+async function post(p, b) { try { const r = await fetch(p, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(b) }); return await r.json(); } catch (e) { return { error: 'Network error.' }; } }
+
+function showUsage(d) {
+  $('#us').innerHTML = `<div class="grid"><div class="card"><div class="mu">Tokens this window</div><div class="big">${kf(d.use || 0)}</div></div><div class="card"><div class="mu">Messages</div><div class="big">${d.msgs || 0}</div></div><div class="card"><div class="mu">Estimated used</div><div class="big">${d.pct ? d.pct[0] + '–' + d.pct[1] + '%' : 'Calibrating'}</div></div></div>`;
+  const L = (a, f) => (a && a.length ? '<ul>' + a.slice().reverse().map(f).join('') + '</ul>' : '<p class="mu">Nothing yet.</p>');
+  $('#hl').innerHTML = L(d.hits, (x) => `<li>${new Date(x.t).toLocaleString()} · hit at ~${kf(x.u)} tokens</li>`);
+  $('#wd').innerHTML = L(d.hist, (x) => `<li>${new Date(x.s).toLocaleDateString()} · ${x.n} messages · ~${kf(x.u)} tokens</li>`);
+  $('#cl').innerHTML = L(d.cuts, (x) => `<li>${new Date(x.t).toLocaleString()} · ~${kf(x.stats && x.stats.tokens)} tokens<br><span class="mu">${esc(x.note).replace(/\n/g, '<br>')}</span></li>`);
+}
+addEventListener('message', (e) => { if (e.origin === 'https://claude.ai' && e.data && e.data.clrdata) { $('#cn').textContent = 'Connected to your claude.ai tab'; showUsage(e.data.clrdata); } });
+try { if (opener) opener.postMessage({ hello: 1 }, 'https://claude.ai'); } catch (e) { /* no opener */ }
+$('#key').value = localStorage.getItem('clr.dkey') || '';
+$('#ld').onclick = async () => {
+  const k = $('#key').value.trim(); if (!k) return;
+  localStorage.setItem('clr.dkey', k);
+  const r = await post('/api/sync', { key: k, action: 'get' });
+  if (r.hits) { $('#cn').textContent = 'Loaded from your sync key'; showUsage({ hits: r.hits, hist: r.hist, cuts: r.log }); } else $('#cn').textContent = r.error || 'Could not load.';
+};
+if ($('#key').value) $('#ld').click();
+
+$('#go').onclick = async () => {
+  const t = $('#oi').value.trim(); if (!t) return;
+  $('#om').textContent = 'Working…';
+  const r = await post('/api/ai', { mode: $('#md').value, text: t });
+  if (r.text) { $('#oo').value = r.text; $('#om').textContent = 'Done with ' + r.provider + ($('#md').value === 'plan' ? '' : ` · ~${est(t)} → ~${est(r.text)} tokens`); } else $('#om').textContent = r.error || 'Something went wrong.';
+};
+$('#cp').onclick = () => { $('#oo').select(); document.execCommand('copy'); };
+
+const H = [];
+function paint() {
+  $('#cm').innerHTML = H.map((m) => (m.role === 'user'
+    ? `<div class="msg me"><b>You</b><br>${esc(m.content)}</div>`
+    : `<div class="msg">${m.content.split('```').map((p, i) => (i % 2 ? `<pre>${esc(p.replace(/^[^\n]*\n/, ''))}</pre>` : esc(p))).join('')}${m.by ? `<div class="mu">Clauree · ${esc(m.by)}</div>` : ''}</div>`)).join('');
+}
+$('#sd').onclick = async () => {
+  const t = $('#ci').value.trim(); if (!t) return;
+  $('#ci').value = ''; H.push({ role: 'user', content: t }); paint();
+  const r = await post('/api/chat', { messages: H.filter((m) => !m.err).map((m) => ({ role: m.role, content: m.content })).slice(-40) });
+  H.push(r.text ? { role: 'assistant', content: r.text, by: r.provider } : { role: 'assistant', content: 'Error: ' + (r.error || 'no answer'), err: 1 });
+  paint();
+};
+</script>
+</body>
+</html>

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clauree - Smart Claude Free-Tier Assistant & Limit Bypass</title>
+    <link rel="icon" href="/logo.png">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -84,9 +85,7 @@
     <header class="sticky top-0 z-40 backdrop-blur-md bg-brand-100/80 dark:bg-brand-dark/80 border-b border-brand-border dark:border-brand-borderDark transition-colors">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-xl bg-brand-accent text-white flex items-center justify-center font-bold text-xl shadow-md">
-                    <i class="fa-solid fa-bolt-lightning text-white"></i>
-                </div>
+                <img src="/logo.png" alt="Clauree logo" class="w-10 h-10 rounded-xl object-cover shadow-md" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'w-10 h-10 rounded-xl bg-brand-accent'}))">
                 <div>
                     <span class="font-bold text-xl tracking-tight text-brand-textDark dark:text-white">Clauree</span>
                     <span class="ml-2 text-xs font-semibold px-2 py-0.5 rounded-full bg-brand-accent/10 text-brand-accent border border-brand-accent/20">v2.4 Free Tier Helper</span>
@@ -98,6 +97,8 @@
                 <a href="#features" class="hover:text-brand-accent transition-colors">Features</a>
                 <a href="#sandbox" class="hover:text-brand-accent transition-colors">Live Sandbox</a>
                 <a href="#code" class="hover:text-brand-accent transition-colors">Bookmarklet Code</a>
+                <a href="/dashboard.html" class="hover:text-brand-accent transition-colors">Dashboard</a>
+                <a href="/app/" class="hover:text-brand-accent transition-colors">Mobile app</a>
             </nav>
 
             <div class="flex items-center gap-3">
@@ -397,6 +398,7 @@
             $id('theme-toggle').addEventListener('click', () => document.documentElement.classList.toggle('dark'));
             const b = $id('bookmarklet-link');
             b.addEventListener('click', (e) => { e.preventDefault(); showToast('Drag this button to your bookmarks bar. Clicking it here does nothing.', 'warning'); });
+            b.addEventListener('dragend', () => { showToast('Opening your dashboard…', 'success'); setTimeout(() => { location.href = '/dashboard.html?welcome=1'; }, 1400); });
             fetch('/clauree.js').then((r) => r.text()).then((t) => {
                 bmUrl = 'javascript:' + encodeURIComponent(t.replace(/__ORIGIN__/g, location.origin) + '\n;void 0');
                 b.href = bmUrl;

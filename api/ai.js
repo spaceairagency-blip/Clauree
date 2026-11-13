@@ -1,4 +1,5 @@
 const P = {
+  polish: 'Rewrite the user prompt so it uses fewer tokens while keeping EVERY requirement, constraint and detail. Fix grammar and spelling and make it clean and clear. Do not add new requirements. Return only the rewritten prompt.',
   compress: 'Rewrite the user prompt so it uses far fewer tokens while keeping EVERY requirement, constraint and detail. Remove filler. Return only the rewritten prompt.',
   structure: 'Turn the user notes into one clear, structured prompt (goal, context, requirements, output format). Keep every fact. Return only the prompt.',
   clarify: 'Rewrite the user prompt to remove ambiguity and repetition. If you must assume something, add one line at the end starting with "Assumed:". Return only the prompt.',
